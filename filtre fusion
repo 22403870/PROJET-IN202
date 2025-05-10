@@ -1,0 +1,74 @@
+def filtre_de_fusion(alpha):       #(YANN)
+    global image, image_loader, image_loader_2
+
+    # if image_loader.size != image_loader_2.size:
+    #     image_loader_2 = image_loader_2.resize(image_loader.size)
+
+    image_1 = np.array(image_loader.convert('RGB'))
+    image_2 = np.array(image_loader_2.convert('RGB'))
+
+    if image_1.shape != image_2.shape:
+        for y in range(image_1.shape[0]):
+            for x in range(image_1.shape[1]):
+                r = int(image_1[y, x, 0] * alpha + image_2[y, x, 0] * (1 - alpha))
+                g = int(image_1[y, x, 1] * alpha + image_2[y, x, 1] * (1 - alpha))
+                b = int(image_1[y, x, 2] * alpha + image_2[y, x, 2] * (1 - alpha))
+                image_1[y, x] = (r, g, b)
+    else:
+        a = 1+1
+        
+    image_loader = Image.fromarray(image_1)
+    add_history(image_loader)  
+    image_canva(canvas, racine)
+
+    return image_loader
+
+
+def interface_de_fusion(): 
+    global dialogue_effet
+    dialogue_effet = tk.Toplevel(racine)  # Création d'une nouvelle fenêtre
+    dialogue_effet.title("Fusion d'Images")
+    dialogue_effet.geometry("400x400")  
+    dialogue_effet.grab_set()
+
+    label_alpha = tk.Label(dialogue_effet, text="Alpha (entre 0.0 et 1.0) :")
+    label_alpha.pack(pady=10)
+
+    taille_widget = tk.Scale(dialogue_effet, from_=0.0, to=1.0,
+                             orient=tk.HORIZONTAL, length=200,
+                             resolution=0.01, digits=2)  
+    taille_widget.set(0.5)
+    taille_widget.pack(pady=10)
+                   
+
+    # Frame pour les boutons
+    bouton = tk.Frame(dialogue_effet)
+    bouton.pack(side=tk.BOTTOM, pady=50)
+
+    # Fonction appliquant l'image
+    def appliquer_fusion():
+        alpha = taille_widget.get()   # Récupération de la valeur de sigma 
+        
+        dialogue_effet.destroy()
+        
+        image_doubler = filtre_de_fusion(alpha)
+
+        global image_loader  
+        image_loader = image_doubler 
+
+        
+        add_history(image_loader)
+        image_canva(canvas, racine)
+
+        
+        dialogue_effet.destroy()
+
+
+    bouton_appliquer = tk.Button(bouton, text="Appliquer", font=("Arial", 10), bg="#f7dcdc", command=appliquer_fusion)
+    bouton_appliquer.pack(side=tk.LEFT, padx=7)
+
+    bouton_annuler = tk.Button(bouton, text="Annuler", font=("Arial", 10), bg="#f7dcdc", command=dialogue_effet.destroy)
+    bouton_annuler.pack(side=tk.LEFT, padx=7)
+
+
+menu_edit.add_command(label="Fusion d'Images", command=interface_de_fusion)
